@@ -5,6 +5,7 @@ const Order       = require('../models/Order');
 const Transaction = require('../models/Transaction');
 const User        = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { sendTicketPurchasedEmail } = require('../services/email');
 
 // GET /api/tickets/event/:eventId — all available tickets for an event
 router.get('/event/:eventId', async (req, res) => {
@@ -127,6 +128,17 @@ router.post('/buy/:ticketId', protect, async (req, res) => {
       message:        'Ticket purchased successfully!',
       order,
       walletBalance:  buyer.walletBalance,
+    });
+
+    // Send emails
+    Event.findById(ticket.event).then(eventDoc => {
+      sendTicketPurchasedEmail({
+        buyerEmail: buyer.email, buyerName: buyer.name,
+        sellerEmail: seller.email, sellerName: seller.name,
+        eventTitle: eventDoc?.title, eventDate: eventDoc?.date,
+        eventVenue: eventDoc?.venue, seatNumber: ticket.seatNumber,
+        category: ticket.category, price: ticket.price,
+      }).catch(err => console.error('Email error:', err.message));
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
