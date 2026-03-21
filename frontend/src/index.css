@@ -314,3 +314,13 @@ tr:last-child td { border-bottom: none; }
   .wallet-amount { font-size: 1.8rem; }
   .card { padding: 14px 12px; }
 }
+
+/* ── Hamburger menu ── */
+.desktop-nav { display: flex; }
+.mobile-nav  { display: none; align-items: center; }
+
+@media (max-width: 768px) {
+  .desktop-nav { display: none; }
+  .mobile-nav  { display: flex; }
+  .navbar-inner { height: 52px; }
+}
