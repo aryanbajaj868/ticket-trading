@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import api from '../services/api';
 
 export default function MyTickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(null);
+  const [qrTicket, setQrTicket] = useState(null);
   const [msg, setMsg] = useState({ text: '', type: '' });
   const navigate = useNavigate();
 
@@ -19,11 +21,8 @@ export default function MyTickets() {
     try {
       const { data } = await api.get('/tickets/my');
       setTickets(data);
-    } catch {
-      notify('Failed to load tickets', 'error');
-    } finally {
-      setLoading(false);
-    }
+    } catch { notify('Failed to load tickets', 'error'); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchTickets(); }, []);
@@ -37,25 +36,18 @@ export default function MyTickets() {
       fetchTickets();
     } catch (err) {
       notify(err.response?.data?.message || 'Cancel failed', 'error');
-    } finally {
-      setCancelling(null);
-    }
+    } finally { setCancelling(null); }
   };
 
-  const formatDate = (d) =>
-    new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-  const statusBadge = {
-    available: 'badge-green',
-    sold:      'badge-gray',
-    cancelled: 'badge-red',
-  };
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const statusBadge = { available: 'badge-green', sold: 'badge-gray', cancelled: 'badge-red' };
 
   if (loading) return <div className="spinner">⏳</div>;
 
   return (
     <div className="page">
       {msg.text && <div className={`alert alert-${msg.type === 'error' ? 'error' : 'success'}`}>{msg.text}</div>}
+
       <div className="flex-between mb-16">
         <div>
           <div className="page-title">My Tickets</div>
@@ -102,14 +94,10 @@ export default function MyTickets() {
                   <td><span className={`badge ${statusBadge[t.status] || 'badge-gray'}`}>{t.status}</span></td>
                   <td>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn btn-outline btn-sm"
-                        onClick={() => navigate(`/events/${t.event?._id}`)}>
-                        View Event
-                      </button>
+                      <button className="btn btn-outline btn-sm" onClick={() => setQrTicket(t)}>🎟️ QR</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => navigate(`/events/${t.event?._id}`)}>View</button>
                       {t.status === 'available' && (
-                        <button className="btn btn-danger btn-sm"
-                          onClick={() => handleCancel(t._id)}
-                          disabled={cancelling === t._id}>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleCancel(t._id)} disabled={cancelling === t._id}>
                           {cancelling === t._id ? '…' : 'Cancel'}
                         </button>
                       )}
@@ -119,6 +107,32 @@ export default function MyTickets() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* QR Modal */}
+      {qrTicket && (
+        <div onClick={() => setQrTicket(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--bg2)', border: '1px solid var(--border)',
+            borderRadius: 16, padding: 32, textAlign: 'center', maxWidth: 340, width: '90%'
+          }}>
+            <h3 style={{ marginBottom: 4 }}>{qrTicket.event?.title}</h3>
+            <p className="text-muted text-sm" style={{ marginBottom: 20 }}>
+              Seat: {qrTicket.seatNumber} · {qrTicket.category} · ₹{qrTicket.price}
+            </p>
+            <div style={{ background: '#fff', padding: 16, borderRadius: 12, display: 'inline-block', marginBottom: 16 }}>
+              <QRCodeSVG
+                value={JSON.stringify({ ticketId: qrTicket._id, event: qrTicket.event?.title, seat: qrTicket.seatNumber, category: qrTicket.category, price: qrTicket.price })}
+                size={200}
+              />
+            </div>
+            <p className="text-muted text-sm" style={{ marginBottom: 16 }}>Show this QR at the venue</p>
+            <button className="btn btn-outline btn-sm" onClick={() => setQrTicket(null)}>Close</button>
+          </div>
         </div>
       )}
     </div>
