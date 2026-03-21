@@ -16,6 +16,8 @@ export default function EventDetail() {
   const [msg,      setMsg]      = useState({ text: '', type: '' });
 
   // Sell form
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form,     setForm]     = useState({ price: '', seatNumber: '', category: 'General' });
   const [listing,  setListing]  = useState(false);
@@ -84,6 +86,12 @@ export default function EventDetail() {
     new Date(d).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const catColor = { VIP: 'badge-purple', Premium: 'badge-yellow', General: 'badge-gray' };
+
+  const filteredTickets = tickets.filter(t => {
+    if (minPrice && t.price < Number(minPrice)) return false;
+    if (maxPrice && t.price > Number(maxPrice)) return false;
+    return true;
+  });
 
   return (
     <div className="page">
@@ -176,14 +184,19 @@ export default function EventDetail() {
       {/* All Available Tickets */}
       <div>
         <h2 style={{ marginBottom: 4 }}>All Available Tickets</h2>
-        <p className="text-muted" style={{ marginBottom: 16 }}>{tickets.length} ticket{tickets.length !== 1 ? 's' : ''} available</p>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+          <p className="text-muted" style={{ margin: 0 }}>{filteredTickets.length} of {tickets.length} tickets</p>
+          <input type="number" placeholder="Min ₹" value={minPrice} onChange={e => setMinPrice(e.target.value)} style={{ width: 100 }} />
+          <input type="number" placeholder="Max ₹" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} style={{ width: 100 }} />
+          {(minPrice || maxPrice) && <button className="btn btn-outline btn-sm" onClick={() => { setMinPrice(''); setMaxPrice(''); }}>Clear</button>}
+        </div>
         {tickets.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">🎫</div>
             <p>No tickets listed yet. Be the first to sell one!</p>
           </div>
         ) : (
-          tickets.map((t) => (
+          filteredTickets.map((t) => (
             <div key={t._id} className="ticket-row">
               <div className="ticket-info">
                 <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
