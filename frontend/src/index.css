@@ -285,3 +285,32 @@ tr:last-child td { border-bottom: none; }
   .wallet-amount { font-size: 1.8rem; }
   .card { padding: 14px; }
 }
+
+/* ── Mobile Responsive Fix ───────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar-inner { padding: 8px 12px; height: auto; min-height: 56px; flex-wrap: wrap; gap: 4px; }
+  .navbar-brand { font-size: 1.1rem; }
+  .navbar-links { gap: 2px; flex-wrap: wrap; }
+  .nav-link { padding: 4px 7px; font-size: 0.75rem; }
+  .nav-wallet { font-size: 0.72rem; padding: 3px 7px; }
+  .page { padding: 16px 12px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .search-bar { flex-direction: column; gap: 8px; }
+  .search-bar input { min-width: unset; width: 100%; }
+  .search-bar select { width: 100%; }
+  .search-bar .btn { width: 100%; justify-content: center; }
+  .wallet-balance { padding: 24px 16px; }
+  .wallet-amount { font-size: 2.2rem; }
+  .ticket-row { flex-direction: column; align-items: flex-start; }
+  .auth-card { padding: 24px 16px; }
+  .flex-between { flex-wrap: wrap; gap: 8px; }
+  .page-title { font-size: 1.4rem; }
+  .btn { font-size: 0.82rem; padding: 8px 14px; }
+  .btn-sm { font-size: 0.75rem; padding: 5px 10px; }
+}
+
+@media (max-width: 420px) {
+  .nav-link { padding: 3px 5px; font-size: 0.7rem; }
+  .wallet-amount { font-size: 1.8rem; }
+  .card { padding: 14px 12px; }
+}
