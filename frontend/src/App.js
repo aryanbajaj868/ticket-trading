@@ -18,24 +18,27 @@ export default function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          {/* Public */}
-          <Route path="/"        element={<Navigate to="/events" replace />} />
-          <Route path="/events"  element={<Events />} />
+          <Route path="/"           element={<Navigate to="/events" replace />} />
+          <Route path="/events"     element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
-          <Route path="/login"   element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Protected */}
-          <Route path="/my-tickets" element={<PrivateRoute><MyTickets /></PrivateRoute>} />
-          <Route path="/orders"     element={<PrivateRoute><Orders /></PrivateRoute>} />
-          <Route path="/wallet"     element={<PrivateRoute><Wallet /></PrivateRoute>} />
-          <Route path="/create-event" element={
-            <PrivateRoute adminOnly><CreateEvent /></PrivateRoute>
-          } />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/events" replace />} />
+          <Route path="/login"      element={<Login />} />
+          <Route path="/register"   element={<Register />} />
+          <Route path="/my-tickets"   element={<PrivateRoute><MyTickets /></PrivateRoute>} />
+          <Route path="/orders"       element={<PrivateRoute><Orders /></PrivateRoute>} />
+          <Route path="/wallet"       element={<PrivateRoute><Wallet /></PrivateRoute>} />
+          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
+          <Route path="*"           element={<Navigate to="/events" replace />} />
         </Routes>
+        <footer style={{
+          textAlign: 'center',
+          padding: '24px',
+          color: 'var(--muted)',
+          fontSize: '0.85rem',
+          borderTop: '1px solid var(--border)',
+          marginTop: '40px'
+        }}>
+          Made with ❤️ by <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Aryan Bajaj</span>
+        </footer>
       </BrowserRouter>
     </AuthProvider>
   );
