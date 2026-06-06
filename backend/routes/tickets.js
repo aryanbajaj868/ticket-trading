@@ -5,7 +5,6 @@ const Order       = require('../models/Order');
 const Transaction = require('../models/Transaction');
 const User        = require('../models/User');
 const { protect } = require('../middleware/auth');
-const { sendTicketPurchasedEmail } = require('../services/email');
 
 // GET /api/tickets/event/:eventId — all available tickets for an event
 router.get('/event/:eventId', async (req, res) => {
@@ -72,28 +71,36 @@ router.post('/list', protect, async (req, res) => {
 // POST /api/tickets/buy/:ticketId — buy a ticket (deducted from wallet)
 router.post('/buy/:ticketId', protect, async (req, res) => {
   try {
-    const ticket = await Ticket.findById(req.params.ticketId);
-    if (!ticket || ticket.status !== 'available')
-      return res.status(400).json({ message: 'Ticket is not available' });
+    // ── Atomic claim: only succeeds if ticket is available AND not owned by buyer ──
+    const ticket = await Ticket.findOneAndUpdate(
+      {
+        _id:    req.params.ticketId,
+        status: 'available',
+        seller: { $ne: req.user._id }, // prevent self-purchase atomically
+      },
+      { $set: { status: 'sold', currentOwner: req.user._id } },
+      { new: true }
+    );
 
-    if (ticket.seller.toString() === req.user._id.toString())
-      return res.status(400).json({ message: 'You cannot buy your own ticket' });
+    if (!ticket) {
+      // Distinguish between "sold/not found" and "own ticket"
+      const original = await Ticket.findById(req.params.ticketId);
+      if (!original) return res.status(404).json({ message: 'Ticket not found' });
+      if (original.seller.toString() === req.user._id.toString())
+        return res.status(400).json({ message: 'You cannot buy your own ticket' });
+      return res.status(400).json({ message: 'Ticket is not available' });
+    }
 
     const buyer  = await User.findById(req.user._id);
     const seller = await User.findById(ticket.seller);
 
+    if (!seller)
+      return res.status(500).json({ message: 'Seller account no longer exists' });
+
     if (buyer.walletBalance < ticket.price)
       return res.status(400).json({ message: 'Insufficient wallet balance. Please top up your wallet.' });
 
-    // ── Atomic updates ───────────────────────────────────────────────
-    ticket.status       = 'sold';
-    ticket.currentOwner = req.user._id;
-    await ticket.save();
-
-    buyer.walletBalance  -= ticket.price;
-    seller.walletBalance += ticket.price;
-    await buyer.save();
-    await seller.save();
+    // ── Wallet transfers ─────────────────────────────────────────────
 
     // ── Order record ─────────────────────────────────────────────────
     const order = await Order.create({
@@ -128,17 +135,6 @@ router.post('/buy/:ticketId', protect, async (req, res) => {
       message:        'Ticket purchased successfully!',
       order,
       walletBalance:  buyer.walletBalance,
-    });
-
-    // Send emails
-    Event.findById(ticket.event).then(eventDoc => {
-      sendTicketPurchasedEmail({
-        buyerEmail: buyer.email, buyerName: buyer.name,
-        sellerEmail: seller.email, sellerName: seller.name,
-        eventTitle: eventDoc?.title, eventDate: eventDoc?.date,
-        eventVenue: eventDoc?.venue, seatNumber: ticket.seatNumber,
-        category: ticket.category, price: ticket.price,
-      }).catch(err => console.error('Email error:', err.message));
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

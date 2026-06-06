@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const Event  = require('../models/Event');
-const { protect } = require('../middleware/auth');
+const { protect, adminOnly } = require('../middleware/auth');
 
 // GET /api/events — list all (public)
 router.get('/', async (req, res) => {
@@ -30,8 +30,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/events — create (any logged-in user or admin)
-router.post('/', protect, async (req, res) => {
+// POST /api/events — create (admin only)
+router.post('/', protect, adminOnly, async (req, res) => {
   try {
     const event = await Event.create({ ...req.body, createdBy: req.user._id });
     res.status(201).json(event);

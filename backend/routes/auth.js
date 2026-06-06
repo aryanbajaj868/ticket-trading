@@ -18,11 +18,12 @@ const safeUser = (user, token) => ({
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
     if (await User.findOne({ email }))
       return res.status(400).json({ message: 'Email already registered' });
 
-    const user = await User.create({ name, email, password, role: role || 'user' });
+    // role is always 'user' on self-registration; admins are assigned manually
+    const user = await User.create({ name, email, password });
     res.status(201).json(safeUser(user, genToken(user._id)));
   } catch (err) {
     res.status(500).json({ message: err.message });

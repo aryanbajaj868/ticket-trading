@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Register() {
-  const [form,    setForm]    = useState({ name: '', email: '', password: '', role: 'user' });
+  const [form,    setForm]    = useState({ name: '', email: '', password: '' });
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -53,13 +53,7 @@ export default function Register() {
             <input name="password" type="password" placeholder="Min 6 characters"
               value={form.password} onChange={handleChange} required />
           </div>
-          <div className="form-group">
-            <label>Account Type</label>
-            <select name="role" value={form.role} onChange={handleChange}>
-              <option value="user">User (Buy &amp; Sell tickets)</option>
-              <option value="admin">Admin (Create events + all user perms)</option>
-            </select>
-          </div>
+
           <button className="btn btn-primary btn-full mt-16" type="submit" disabled={loading}>
             {loading ? 'Creating account…' : 'Create Account'}
           </button>
