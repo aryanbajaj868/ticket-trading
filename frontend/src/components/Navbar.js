@@ -1,25 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-
   const active = (path) => location.pathname === path ? 'nav-link active' : 'nav-link';
-
   const handleLogout = () => { logout(); navigate('/login'); setMenuOpen(false); };
   const go = (path) => { navigate(path); setMenuOpen(false); };
-
   return (
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="navbar-brand" onClick={() => go('/')} style={{ cursor: 'pointer' }}>
           Ticket<span>X</span>
         </div>
-
         {/* Desktop links */}
         <div className="navbar-links desktop-nav">
           <button className={active('/')} onClick={() => go('/')}>Events</button>
@@ -29,7 +24,7 @@ export default function Navbar() {
             <button className={active('/wallet')} onClick={() => go('/wallet')}>
               <span className="nav-wallet">₹{(user.walletBalance || 0).toFixed(2)}</span>
             </button>
-            {user.role === 'admin' && <button className={active('/create-event')} onClick={() => go('/create-event')}>+ Event</button>}
+            <button className={active('/create-event')} onClick={() => go('/create-event')}>+ Event</button>
             <button className="nav-link" onClick={handleLogout}>Logout</button>
           </>}
           {!user && <>
@@ -37,7 +32,6 @@ export default function Navbar() {
             <button className="btn btn-primary btn-sm" onClick={() => go('/register')}>Sign Up</button>
           </>}
         </div>
-
         {/* Mobile: wallet + hamburger */}
         <div className="mobile-nav">
           {user && <span className="nav-wallet" style={{ marginRight: 10 }}>₹{(user.walletBalance || 0).toFixed(2)}</span>}
@@ -46,7 +40,6 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
       {/* Mobile dropdown menu */}
       {menuOpen && (
         <div style={{
@@ -58,7 +51,7 @@ export default function Navbar() {
             <button className={active('/my-tickets')} onClick={() => go('/my-tickets')} style={{ textAlign: 'left' }}>My Tickets</button>
             <button className={active('/orders')} onClick={() => go('/orders')} style={{ textAlign: 'left' }}>Orders</button>
             <button className={active('/wallet')} onClick={() => go('/wallet')} style={{ textAlign: 'left' }}>Wallet</button>
-            {user.role === 'admin' && <button className={active('/create-event')} onClick={() => go('/create-event')} style={{ textAlign: 'left' }}>+ Create Event</button>}
+            <button className={active('/create-event')} onClick={() => go('/create-event')} style={{ textAlign: 'left' }}>+ Create Event</button>
             <button className="nav-link" onClick={handleLogout} style={{ textAlign: 'left', color: 'var(--danger)' }}>Logout</button>
           </>}
           {!user && <>
